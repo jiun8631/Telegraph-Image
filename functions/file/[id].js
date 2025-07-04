@@ -24,14 +24,23 @@ export async function onRequest(context) {
         fileUrl = `https://api.telegram.org/file/bot${env.TG_Bot_Token}/${filePath}`;
     }
 
-    const response = await fetch(fileUrl, {
-        method: request.method,
-        headers: request.headers,
-        body: request.body,
-    });
+  // --- 在这里插入 cache-control 逻辑 ---
+  const original = await fetch(fileUrl, {
+    method: request.method,
+    headers: request.headers,
+    body: request.body,
+  });
+  if (!original.ok) return original;
 
-    // If the response is OK, proceed with further checks
-    if (!response.ok) return response;
+  const buffer = await original.arrayBuffer();
+  const headers = new Headers(original.headers);
+  headers.set('Cache-Control', 'public, max-age=31536000');
+  const response = new Response(buffer, {
+    status: original.status,
+    statusText: original.statusText,
+    headers,
+  });
+  // --- cache-control 已加好，下面所有 return response 都会带上这个头 ---
 
     // Log response details
     console.log(response.ok, response.status);
