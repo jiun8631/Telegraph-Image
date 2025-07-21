@@ -7,21 +7,6 @@ export async function onRequestPost(context) {
         const clonedRequest = request.clone();
         const formData = await clonedRequest.formData();
 
-        // 新增：獲取用戶輸入的密碼並驗證
-        const password = formData.get('password');  // 前端會發送這個字段
-        const correctPassword = env.UPLOAD_PASSWORD;  // 從環境變量獲取
-        
-        if (!password || password !== correctPassword) {
-            return new Response(
-                JSON.stringify({ error: 'Invalid password' }),
-                {
-                    status: 403,  // Forbidden
-                    headers: { 'Content-Type': 'application/json' }
-                }
-            );
-        }
-
-        // 以下是原有邏輯，保持不變
         await errorHandling(context);
         telemetryData(context);
 
@@ -97,7 +82,6 @@ export async function onRequestPost(context) {
     }
 }
 
-// 以下函數保持不變
 function getFileId(response) {
     if (!response.ok || !response.result) return null;
 
